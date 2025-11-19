@@ -25,11 +25,25 @@ Open [http://localhost:3000](http://localhost:3000)
 
 **📖 Full Setup Guide**: See [SETUP_GUIDE.md](./SETUP_GUIDE.md)
 
-## Core Features (MVP)
+## Core Features
 
+### TTRPG Features
 1. **Character Sheet System** - Create and manage D&D 5e characters
 2. **Dice Rolling Engine** - Visual dice roller with logging
 3. **AI DM Chat** - Play with AI Dungeon Master (Groq/Llama 3.1)
+
+### 🐺 Werewolf Game Mode (NEW!)
+4. **Werewolf Social Deduction** - Complete Werewolf/Mafia game implementation
+   - Full lobby system with invite codes
+   - 9 unique roles (Werewolf, Seer, Doctor, Hunter, Witch, and more)
+   - AI-powered Dungeon Master narration
+   - Smart AI players with 3 difficulty levels
+   - Night/Day phase system with voting mechanics
+   - Real-time suspicion tracker
+   - Atmospheric village lore generation
+   - Complete win condition detection
+
+**[📖 Werewolf Quick Start Guide →](./WEREWOLF_GUIDE.md)**
 
 ## Tech Stack
 
@@ -45,16 +59,33 @@ Open [http://localhost:3000](http://localhost:3000)
 │   ├── (auth)/          # Authentication pages
 │   ├── character/       # Character creation/management
 │   ├── play/           # Game session interface
-│   └── api/            # API routes
+│   ├── werewolf/       # 🐺 Werewolf game mode
+│   └── api/
+│       ├── chat/       # TTRPG AI DM
+│       └── werewolf/   # Werewolf AI (narration + AI players)
 ├── components/
 │   ├── character/      # Character sheet components
 │   ├── dice/          # Dice roller components
-│   └── chat/          # Chat interface
+│   ├── chat/          # Chat interface
+│   └── werewolf/      # 🐺 Werewolf UI components
+│       ├── RoleCard.tsx        # Player role display
+│       ├── PlayerGrid.tsx      # All players overview
+│       ├── VotingUI.tsx        # Day voting interface
+│       ├── NightActionUI.tsx   # Night phase actions
+│       └── WerewolfLobby.tsx   # Lobby & settings
 ├── lib/
 │   ├── supabase/      # Supabase client and utilities
 │   ├── ai/            # AI integration (Groq)
-│   └── game/          # Game mechanics and rules
-└── types/             # TypeScript types
+│   ├── game/          # Game mechanics and rules
+│   └── werewolf/      # 🐺 Werewolf game logic
+│       ├── game-utils.ts   # Core game mechanics
+│       ├── storage.ts      # localStorage utilities
+│       └── prompts.ts      # AI narration templates
+└── types/
+    ├── character.ts   # D&D character types
+    ├── chat.ts        # TTRPG session types
+    ├── dice.ts        # Dice roll types
+    └── werewolf.ts    # 🐺 Werewolf game types
 ```
 
 ## Development Timeline
