@@ -7,9 +7,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
 import type { WerewolfGameState, GamePhase, WerewolfPlayer } from '@/types/werewolf';
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+// Lazy initialization of Groq client
+let groq: Groq | null = null;
+function getGroqClient() {
+  if (!groq) {
+    groq = new Groq({
+      apiKey: process.env.GROQ_API_KEY,
+    });
+  }
+  return groq;
+}
 
 export const runtime = 'edge';
 
@@ -102,7 +109,7 @@ async function generateNarration(
     const systemPrompt = buildNarratorPrompt(gameState, eventType);
     const userPrompt = buildUserPrompt(eventType, context);
 
-    const completion = await groq.chat.completions.create({
+    const completion = await getGroqClient().chat.completions.create({
       model: 'llama-3.1-8b-instant',
       messages: [
         { role: 'system', content: systemPrompt },

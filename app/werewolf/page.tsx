@@ -10,6 +10,7 @@ import type {
   NightAction,
   DayVote,
 } from '@/types/werewolf';
+import type { GameHistoryEntry, GameSessionStats, PartyMember } from '@/types/user';
 import {
   createLobby,
   addAIPlayers,
@@ -25,6 +26,8 @@ import {
 } from '@/lib/werewolf/game-utils';
 import { gameStateStorage, lobbyStorage, generateId } from '@/lib/werewolf/storage';
 import { getNarration } from '@/lib/werewolf/prompts';
+import { useUser } from '@/contexts/UserContext';
+import { gameHistoryStorage, userStatsStorage } from '@/lib/user/storage';
 
 // Components
 import WerewolfLobbyComponent from '@/components/werewolf/WerewolfLobby';
@@ -37,6 +40,7 @@ type GameView = 'menu' | 'createLobby' | 'joinLobby' | 'lobby' | 'game';
 
 export default function WerewolfPage() {
   const router = useRouter();
+  const { user } = useUser();
   const [view, setView] = useState<GameView>('menu');
   const [lobby, setLobby] = useState<WerewolfLobby | null>(null);
   const [gameState, setGameState] = useState<WerewolfGameState | null>(null);
@@ -46,6 +50,7 @@ export default function WerewolfPage() {
   const [showRoleCard, setShowRoleCard] = useState<boolean>(false);
   const [narration, setNarration] = useState<string>('');
   const [phaseTimer, setPhaseTimer] = useState<number>(0);
+  const [gameHistoryId, setGameHistoryId] = useState<string | null>(null);
 
   // Load existing game state on mount
   useEffect(() => {
@@ -208,12 +213,136 @@ export default function WerewolfPage() {
     // Transition to Night phase
     newGameState = transitionPhase(newGameState, 'Night');
 
+    // Create game history entry if user is logged in
+    if (user) {
+      const currentPlayer = newGameState.players.find((p) => p.id === currentPlayerId);
+      const partyMembers: PartyMember[] = newGameState.players.map((p) => ({
+        id: p.id,
+        name: p.name,
+        role: p.role || 'Unknown',
+        isAI: p.isAI,
+      }));
+
+      const historyEntry: GameHistoryEntry = {
+        id: generateId(),
+        userId: user.id,
+        gameType: 'Werewolf',
+        gameName: `Werewolf - ${newGameState.villageName}`,
+        gameSessionId: newGameState.id,
+        startedAt: new Date(),
+        endedAt: null,
+        duration: 0,
+        status: 'Ongoing',
+        outcome: 'Ongoing',
+        role: currentPlayer?.role || 'Unknown',
+        partyMembers,
+        dmId: 'AI',
+        dmName: 'AI Narrator',
+        stats: {},
+        xpGained: 0,
+        tags: ['werewolf', 'social-deduction', 'AI-narrated'],
+        notes: '',
+        isPublic: true,
+        isFeatured: false,
+        replayAvailable: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      gameHistoryStorage.add(historyEntry);
+      setGameHistoryId(historyEntry.id);
+    }
+
     setGameState(newGameState);
     setShowRoleCard(true);
     setView('game');
 
     // Hide role card after 10 seconds
     setTimeout(() => setShowRoleCard(false), 10000);
+  };
+
+  // ============================================================================
+  // GAME HISTORY HELPERS
+  // ============================================================================
+
+  const finalizeGameHistory = (finalGameState: WerewolfGameState) => {
+    if (!user || !gameHistoryId) return;
+
+    const currentPlayer = finalGameState.players.find((p) => p.id === currentPlayerId);
+    if (!currentPlayer) return;
+
+    // Calculate game duration
+    const startTime = finalGameState.events[0]?.timestamp || Date.now();
+    const endTime = Date.now();
+    const durationMinutes = Math.floor((endTime - startTime) / 60000);
+
+    // Determine outcome
+    let outcome: 'Victory' | 'Defeat' | 'Draw' = 'Defeat';
+    const playerAllegiance = currentPlayer.role === 'Werewolf' ? 'Werewolves' : 'Villagers';
+    if (finalGameState.winner === playerAllegiance) {
+      outcome = 'Victory';
+    }
+
+    // Calculate stats
+    const totalVotes = finalGameState.dayVotes.filter(
+      (v) => v.voterId === currentPlayerId
+    ).length;
+
+    const votesCorrect = finalGameState.dayVotes.filter((v) => {
+      if (v.voterId !== currentPlayerId || !v.targetId) return false;
+      const target = finalGameState.players.find((p) => p.id === v.targetId);
+      return target?.role === 'Werewolf';
+    }).length;
+
+    const votesIncorrect = totalVotes - votesCorrect;
+
+    const nightActions = finalGameState.nightActions.filter(
+      (a) => a.playerId === currentPlayerId
+    );
+
+    const stats: GameSessionStats = {
+      votesCorrect,
+      votesIncorrect,
+      survived: currentPlayer.status === 'Alive',
+      eliminatedOnDay: currentPlayer.status === 'Dead' ? finalGameState.dayNumber : undefined,
+    };
+
+    // Role-specific stats
+    if (currentPlayer.role === 'Seer') {
+      stats.rolesIdentified = nightActions.filter((a) => a.actionType === 'investigate').length;
+    } else if (currentPlayer.role === 'Doctor') {
+      stats.livesProtected = nightActions.filter((a) => a.actionType === 'protect').length;
+    } else if (currentPlayer.role === 'Werewolf') {
+      stats.killsAsWerewolf = nightActions.filter((a) => a.actionType === 'kill').length;
+    }
+
+    // Calculate XP
+    let xpGained = 50; // Base XP for participation
+    if (outcome === 'Victory') xpGained += 100;
+    if (currentPlayer.status === 'Alive') xpGained += 50;
+    xpGained += votesCorrect * 10;
+    xpGained += (stats.rolesIdentified || 0) * 15;
+    xpGained += (stats.livesProtected || 0) * 15;
+
+    // Update game history entry
+    gameHistoryStorage.update(user.id, gameHistoryId, {
+      endedAt: new Date(),
+      duration: durationMinutes,
+      status: 'Completed',
+      outcome,
+      stats,
+      xpGained,
+      updatedAt: new Date(),
+    });
+
+    // Update user stats
+    userStatsStorage.updateAfterGame(user.id, 'Werewolf', outcome === 'Victory');
+
+    // Award XP to user
+    if (user.currentXP + xpGained >= user.xpToNextLevel) {
+      // Level up logic would go here
+      // For now, just add the XP
+    }
   };
 
   // ============================================================================
@@ -319,6 +448,9 @@ export default function WerewolfPage() {
     if (gameOver) {
       updatedState = transitionPhase(updatedState, 'GameOver');
       updatedState.winner = winner;
+
+      // Finalize game history
+      finalizeGameHistory(updatedState);
     } else {
       // Transition to Day phase
       updatedState = transitionPhase(updatedState, 'Day');
@@ -399,6 +531,9 @@ export default function WerewolfPage() {
       if (gameOver) {
         updatedState = transitionPhase(updatedState, 'GameOver');
         updatedState.winner = winner;
+
+        // Finalize game history
+        finalizeGameHistory(updatedState);
       } else {
         // Transition to next Night phase
         updatedState = transitionPhase(updatedState, 'Night');
@@ -431,9 +566,28 @@ export default function WerewolfPage() {
   };
 
   const handleNewGame = () => {
+    // If game is still ongoing and user is logged in, mark as abandoned
+    if (gameState && gameState.phase !== 'GameOver' && user && gameHistoryId) {
+      const currentPlayer = gameState.players.find((p) => p.id === currentPlayerId);
+
+      if (currentPlayer) {
+        const startTime = gameState.events[0]?.timestamp || Date.now();
+        const durationMinutes = Math.floor((Date.now() - startTime) / 60000);
+
+        gameHistoryStorage.update(user.id, gameHistoryId, {
+          endedAt: new Date(),
+          duration: durationMinutes,
+          status: 'Abandoned',
+          outcome: 'Abandoned',
+          updatedAt: new Date(),
+        });
+      }
+    }
+
     gameStateStorage.clear();
     setGameState(null);
     setLobby(null);
+    setGameHistoryId(null);
     setView('menu');
   };
 

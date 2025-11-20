@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { UserProvider } from "@/contexts/UserContext";
+import GlobalNav from "@/components/navigation/GlobalNav";
 
 export const metadata: Metadata = {
   title: "TTRPG Platform - AI-Powered Tabletop Gaming",
@@ -13,8 +15,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased min-h-screen">
-        {children}
+      <body className="antialiased min-h-screen bg-gray-950">
+        <UserProvider>
+          <GlobalNav />
+          {children}
+        </UserProvider>
       </body>
     </html>
   );

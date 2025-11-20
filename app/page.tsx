@@ -1,16 +1,32 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { characterStorage } from '@/lib/storage';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useUser } from '@/contexts/UserContext';
 
 export default function Home() {
-  const [hasCharacters, setHasCharacters] = useState(false);
+  const router = useRouter();
+  const { isLoggedIn, isLoading } = useUser();
 
+  // Redirect logged-in users to dashboard
   useEffect(() => {
-    const characters = characterStorage.getAll();
-    setHasCharacters(characters.length > 0);
-  }, []);
+    if (!isLoading && isLoggedIn) {
+      router.push('/dashboard');
+    }
+  }, [isLoggedIn, isLoading, router]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-950 to-gray-900 flex items-center justify-center">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
+
+  if (isLoggedIn) {
+    return null; // Will redirect
+  }
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-8 bg-gradient-to-b from-gray-950 to-gray-900">
@@ -75,37 +91,24 @@ export default function Home() {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          {hasCharacters ? (
-            <>
-              <Link
-                href="/characters"
-                className="px-8 py-4 bg-gray-800 hover:bg-gray-700 rounded-lg font-semibold text-lg transition-colors"
-              >
-                My Characters
-              </Link>
-              <Link
-                href="/play"
-                className="px-8 py-4 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold text-lg transition-colors"
-              >
-                Start Adventure →
-              </Link>
-            </>
-          ) : (
-            <>
-              <Link
-                href="/character/new"
-                className="px-8 py-4 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold text-lg transition-colors"
-              >
-                Create Your First Character
-              </Link>
-              <Link
-                href="/play"
-                className="px-8 py-4 bg-gray-700 hover:bg-gray-600 rounded-lg font-semibold text-lg transition-colors"
-              >
-                Quick Start (No Character)
-              </Link>
-            </>
-          )}
+          <Link
+            href="/auth/signup"
+            className="px-8 py-4 bg-amber-600 hover:bg-amber-500 rounded-lg font-bold text-lg transition-all transform hover:scale-105 shadow-lg shadow-amber-600/50"
+          >
+            Get Started Free
+          </Link>
+          <Link
+            href="/games/werewolf"
+            className="px-8 py-4 bg-red-600 hover:bg-red-500 rounded-lg font-bold text-lg transition-all transform hover:scale-105"
+          >
+            Play Werewolf
+          </Link>
+          <Link
+            href="/auth/login"
+            className="px-8 py-4 bg-gray-800 hover:bg-gray-700 rounded-lg font-semibold text-lg transition-colors border border-gray-600"
+          >
+            Sign In
+          </Link>
         </div>
       </div>
     </main>

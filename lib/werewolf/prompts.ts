@@ -229,8 +229,8 @@ export const NARRATION_TEMPLATES = {
   ],
 
   voteStart: [
-    '🗳️ The discussion grows heated. It's time to decide. Who among you will face judgment? Choose wisely—an innocent's blood may damn you all.',
-    '🗳️ Silence falls. The time for words has passed. Point your finger and seal someone's fate. But beware—the wolves are watching, and they vote too.',
+    '🗳️ The discussion grows heated. It is time to decide. Who among you will face judgment? Choose wisely—an innocent\'s blood may damn you all.',
+    '🗳️ Silence falls. The time for words has passed. Point your finger and seal someone\'s fate. But beware—the wolves are watching, and they vote too.',
     '🗳️ The crowd murmurs with unease. A decision must be made. Who will you sacrifice in the name of safety?',
   ],
 
@@ -328,15 +328,15 @@ export const AI_CHAT_TEMPLATES = {
     'My gut says {targetName} is hiding something.',
   ],
   defense: [
-    'Wait, why are you all voting for me? I'm innocent!',
-    'This is crazy! I'm not a werewolf!',
-    'You're making a huge mistake. I'm on your side!',
-    'I can't believe you'd think that of me.',
+    'Wait, why are you all voting for me? I\'m innocent!',
+    'This is crazy! I\'m not a werewolf!',
+    'You\'re making a huge mistake. I\'m on your side!',
+    'I can\'t believe you\'d think that of me.',
   ],
   agreement: [
     'I agree with that assessment.',
     'That makes sense to me.',
-    'Yeah, I've been thinking the same thing.',
+    'Yeah, I\'ve been thinking the same thing.',
     'Good point.',
   ],
   question: [
@@ -348,8 +348,8 @@ export const AI_CHAT_TEMPLATES = {
   strategic: [
     'If {playerName} is telling the truth, then {otherName} must be lying.',
     'We need to think this through carefully.',
-    'Let's not rush this decision.',
-    'Remember what happened on Day {day}? That's important.',
+    'Let\'s not rush this decision.',
+    'Remember what happened on Day {day}? That\'s important.',
   ],
 };
 

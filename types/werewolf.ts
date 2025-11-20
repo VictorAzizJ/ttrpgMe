@@ -35,6 +35,8 @@ export interface WerewolfRole {
   allegiance: WerewolfAllegiance;
   name: string;
   description: string;
+  icon: string;
+  difficulty: 'Easy' | 'Medium' | 'Hard';
   nightAction: string | null;
   specialAbility: string;
   winsWithVillagers: boolean;
@@ -354,6 +356,8 @@ export const WEREWOLF_ROLES: Record<WerewolfRoleType, WerewolfRole> = {
     type: 'Werewolf',
     allegiance: 'Werewolves',
     name: 'Werewolf',
+    icon: '🐺',
+    difficulty: 'Medium',
     description:
       'You are a creature of the night. Each night, you and your pack choose a villager to kill.',
     nightAction: 'Choose a player to kill',
@@ -364,6 +368,8 @@ export const WEREWOLF_ROLES: Record<WerewolfRoleType, WerewolfRole> = {
     type: 'Villager',
     allegiance: 'Villagers',
     name: 'Villager',
+    icon: '👨',
+    difficulty: 'Easy',
     description:
       'You are a simple villager. You have no special powers, but your vote during the day is crucial.',
     nightAction: null,
@@ -374,6 +380,8 @@ export const WEREWOLF_ROLES: Record<WerewolfRoleType, WerewolfRole> = {
     type: 'Seer',
     allegiance: 'Villagers',
     name: 'Seer',
+    icon: '🔮',
+    difficulty: 'Hard',
     description:
       'Each night, you may investigate one player to learn their true nature.',
     nightAction: 'Investigate one player',
@@ -384,6 +392,8 @@ export const WEREWOLF_ROLES: Record<WerewolfRoleType, WerewolfRole> = {
     type: 'Doctor',
     allegiance: 'Villagers',
     name: 'Doctor',
+    icon: '⚕️',
+    difficulty: 'Medium',
     description:
       'Each night, you may protect one player from being killed by Werewolves.',
     nightAction: 'Protect one player',
@@ -394,6 +404,8 @@ export const WEREWOLF_ROLES: Record<WerewolfRoleType, WerewolfRole> = {
     type: 'Hunter',
     allegiance: 'Villagers',
     name: 'Hunter',
+    icon: '🏹',
+    difficulty: 'Medium',
     description:
       'You are a skilled hunter. When you die, you immediately kill one other player.',
     nightAction: null,
@@ -404,6 +416,8 @@ export const WEREWOLF_ROLES: Record<WerewolfRoleType, WerewolfRole> = {
     type: 'Witch',
     allegiance: 'Villagers',
     name: 'Witch',
+    icon: '🧙',
+    difficulty: 'Hard',
     description:
       'You have two potions: one to heal and one to poison. Each can be used once per game.',
     nightAction: 'Use heal or poison potion',
@@ -414,6 +428,8 @@ export const WEREWOLF_ROLES: Record<WerewolfRoleType, WerewolfRole> = {
     type: 'Tanner',
     allegiance: 'Neutral',
     name: 'Tanner',
+    icon: '🪡',
+    difficulty: 'Easy',
     description:
       'You are tired of life and want to die. You win if YOU are eliminated during the day.',
     nightAction: null,
@@ -424,6 +440,8 @@ export const WEREWOLF_ROLES: Record<WerewolfRoleType, WerewolfRole> = {
     type: 'Cupid',
     allegiance: 'Villagers',
     name: 'Cupid',
+    icon: '💘',
+    difficulty: 'Medium',
     description:
       'On the first night, you link two players. If one dies, both die.',
     nightAction: 'Link two players (first night only)',
@@ -434,6 +452,8 @@ export const WEREWOLF_ROLES: Record<WerewolfRoleType, WerewolfRole> = {
     type: 'Fool',
     allegiance: 'Villagers',
     name: 'Fool',
+    icon: '🃏',
+    difficulty: 'Medium',
     description:
       'You are a villager, but you appear as a Werewolf to the Seer.',
     nightAction: null,

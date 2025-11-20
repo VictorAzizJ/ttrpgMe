@@ -12,9 +12,16 @@ import type {
   AIPlayerDecision,
 } from '@/types/werewolf';
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+// Lazy initialization of Groq client
+let groq: Groq | null = null;
+function getGroqClient() {
+  if (!groq) {
+    groq = new Groq({
+      apiKey: process.env.GROQ_API_KEY,
+    });
+  }
+  return groq;
+}
 
 export const runtime = 'edge';
 
@@ -35,7 +42,7 @@ interface AIDecisionRequest {
 /**
  * Generate AI player decision based on role and difficulty
  */
-export async function generateAIDecision(
+async function generateAIDecision(
   request: AIDecisionRequest
 ): Promise<AIPlayerDecision> {
   const { gameState, aiPlayer, decisionType } = request;
@@ -417,7 +424,7 @@ ${
 Generate a short (1-2 sentence) message to contribute to the discussion.
 Be natural, conversational, and stay in character.`;
 
-    const completion = await groq.chat.completions.create({
+    const completion = await getGroqClient().chat.completions.create({
       model: 'llama-3.1-8b-instant',
       messages: [
         { role: 'system', content: systemPrompt },
